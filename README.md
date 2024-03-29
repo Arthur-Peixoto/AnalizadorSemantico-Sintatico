@@ -48,4 +48,13 @@ Antes de compilar o trabalho, verifique se você possui os seguintes pré-requis
   
 	     ./sample teste.txt
 
+## Observação sobre Erros Sintáticos
+
+Durante a execução, o terminal pode gerar mensagens de erro sintático no seguinte formato:
+
+```cpp
+ERRO SINTÁTICO: símbolo "<símbolo>" (linha <número> do arquivo)
+
+Essas mensagens indicam um erro sintático no arquivo de entrada. Caso contrário, se o programa for compilado com sucesso e sem erros, nenhuma mensagem de erro será gerada.
+
 
