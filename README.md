@@ -54,6 +54,7 @@ Durante a execução, o terminal pode gerar mensagens de erro sintático no segu
 
 ```cpp
 ERRO SINTÁTICO: símbolo "<símbolo>" (linha <número> do arquivo)
+```
 
 Essas mensagens indicam um erro sintático no arquivo de entrada. Caso contrário, se o programa for compilado com sucesso e sem erros, nenhuma mensagem de erro será gerada.
 
