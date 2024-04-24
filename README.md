@@ -42,7 +42,7 @@ ERRO SINTÁTICO: símbolo "<símbolo>" (linha <número> do arquivo)
 ### Precedencia dos OPeradores
 - Desde a análise sintática já havia sido tratado o problema de ordem de operadores incorretas, entendendo que sempre que um EquivalentTo viesse anteriormente ao SubClassOf ele seria reconhecido como uma classe indefinida
 <img src="https://raw.githubusercontent.com/Arthur-Peixoto/Assets/main/Captura%20de%20tela%20de%202024-04-24%2000-25-37.png" alt="Texto Alternativo">
-Imagem di código do analisador sintártico
+Imagem do código do analisador sintártico
 
 ### Axioma de fechamento
 - Foi utilizado dentro da classe semanticAnalyzer uma função "onlyCheck" para garantir que axiomas de fechamento só podem aparecer depois de declarações existenciais de
