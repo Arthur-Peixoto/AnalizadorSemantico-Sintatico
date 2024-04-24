@@ -39,4 +39,4 @@ ERRO SINTÁTICO: símbolo "<símbolo>" (linha <número> do arquivo)
 ```
 
 Essas mensagens indicam um erro sintático no arquivo de entrada. Caso contrário, se o programa for compilado com sucesso e sem erros, nenhuma mensagem de erro será gerada.
-
+<img src="https://raw.githubusercontent.com/Arthur-Peixoto/Assets/main/Captura%20de%20tela%20de%202024-04-24%2000-11-22.png" alt="Texto Alternativo">
