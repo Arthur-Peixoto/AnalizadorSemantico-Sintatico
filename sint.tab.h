@@ -67,23 +67,33 @@ extern int yydebug;
     ONLY = 268,                    /* ONLY  */
     INVERSE = 269,                 /* INVERSE  */
     CLASS = 270,                   /* CLASS  */
-    PROPRIEDADES = 271,            /* PROPRIEDADES  */
+    PROPRIETY = 271,               /* PROPRIETY  */
     INSTANCY = 272,                /* INSTANCY  */
-    RELOP = 273,                   /* RELOP  */
-    DADOS = 274,                   /* DADOS  */
-    NUM = 275,                     /* NUM  */
-    RESERVADO = 276,               /* RESERVADO  */
-    SUBCLASSOF = 277,              /* SUBCLASSOF  */
-    EQUIVALENTTO = 278,            /* EQUIVALENTTO  */
-    INDIVIDUALS = 279,             /* INDIVIDUALS  */
-    DISJOINTCLASS = 280            /* DISJOINTCLASS  */
+    SSYMBOL = 273,                 /* SSYMBOL  */
+    DTYPE = 274,                   /* DTYPE  */
+    CARDINALIDADE = 275,           /* CARDINALIDADE  */
+    RCLASS = 276,                  /* RCLASS  */
+    RSUBCLASS = 277,               /* RSUBCLASS  */
+    REQUIVALENT = 278,             /* REQUIVALENT  */
+    RINDIVIDUALS = 279,            /* RINDIVIDUALS  */
+    RDISJOINT = 280                /* RDISJOINT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 39 "sint.y"
+
+	double num;
+	int ind;
+
+#line 94 "sint.tab.h"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
