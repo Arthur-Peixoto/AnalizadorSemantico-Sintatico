@@ -33,10 +33,23 @@ Antes de compilar o trabalho, verifique se você possui os seguintes pré-requis
 	     ./sample teste.txt
 ## Observação sobre Erros Sintáticos
 Durante a execução, o terminal pode gerar mensagens de erro sintático no seguinte formato:
-
+Essas mensagens indicam um erro sintático no arquivo de entrada. Caso contrário, se o programa for compilado com sucesso e sem erros, nenhuma mensagem de erro será gerada.
 ```cpp
 ERRO SINTÁTICO: símbolo "<símbolo>" (linha <número> do arquivo)
 ```
 
-Essas mensagens indicam um erro sintático no arquivo de entrada. Caso contrário, se o programa for compilado com sucesso e sem erros, nenhuma mensagem de erro será gerada.
+## Observação sobre Análise Semântica
+### Precedencia dos OPeradores
+- Desde a análise sintática já havia sido tratado o problema de ordem de operadores incorretas, entendendo que sempre que um EquivalentTo viesse anteriormente ao SubClassOf ele seria reconhecido como uma classe indefinida
+<img src="https://raw.githubusercontent.com/Arthur-Peixoto/Assets/main/Captura%20de%20tela%20de%202024-04-24%2000-25-37.png" alt="Texto Alternativo">
+Imagem di código do analisador sintártico
+
+### Axioma de fechamento
+- Foi utilizado dentro da classe semanticAnalyzer uma função "onlyCheck" para garantir que axiomas de fechamento só podem aparecer depois de declarações existenciais de
+propriedades, pois não tem como fechar as imagens das propriedades sem tê-las declaradoantes explicitamente.
 <img src="https://raw.githubusercontent.com/Arthur-Peixoto/Assets/main/Captura%20de%20tela%20de%202024-04-24%2000-11-22.png" alt="Texto Alternativo">
+
+### VERIFICAÇÃO ESTÁTICA DE TIPOS POR COERÇÃO
+- Foi criada uma função no Analizador Sintático para tratar usos de Min, Max, Exactly, apontando erros com o intuito de "forçar" o ontologista a indicar um número entre o operador.
+- Além de uma função específica para tratar integer e floats de maneira separada
+<img src="https://raw.githubusercontent.com/Arthur-Peixoto/Assets/main/Captura%20de%20tela%20de%202024-04-24%2000-11-44.png" alt="Texto Alternativo">
