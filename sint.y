@@ -2,136 +2,230 @@
     
     #include <iostream>
     #include <stdio.h>
-    #include <cstring>
+    #include <map>
+    #include <vector>
+    #include "semanticAnalyzer.cpp"
+    using std::vector;
+    using std::string;
     using std::cout;
+    using std::endl;
 
     int yylex(void);
     int yyparse(void);
     void yyerror(const char *);
 
-    extern int yylineno;    
-	extern char * yytext;   
+    semanticAnalyzer * semantico = new semanticAnalyzer();
+
+    bool isSubclassOf = false;
+
+    string operadorAtual;
+    string classeAtual;
+    string precedente;
+    string coercao;
+    string numCoercao = "";
+
+    vector<string> sintaticErrors;
+    string sintClass = "";
+
+    std::string propriedadeAtual;
+
+    extern char *yytext;
+    extern int yylineno; 
 
 %}
 
-%token SOME ALL VALUE MIN MAX EXACTLY THAT NOT OR AND ONLY INVERSE CLASS PROPRIEDADES INSTANCY 
-%token RELOP DADOS NUM RESERVADO SUBCLASSOF EQUIVALENTTO INDIVIDUALS DISJOINTCLASS 
-%token '[' ']' '(' ')' ',' '{' '}'
+%union {
+	double num;
+	int ind;
+}
+
+%token SOME ALL VALUE MIN MAX EXACTLY THAT NOT OR AND ONLY INVERSE CLASS PROPRIETY INSTANCY SSYMBOL DTYPE CARDINALIDADE 
+%token RCLASS RSUBCLASS REQUIVALENT RINDIVIDUALS RDISJOINT '[' ']' '(' ')' ',' '{' '}'
 
 %%
 
-classe: classeBody classe              
-    | 
-    ;
-
-classeBody: classReservada equivalent disjIndiv     
-    | classReservada subclass disjIndiv     
-    | classReservada disjIndiv        
-    | classReservada equivalent subclass disjIndiv 
-    ;
-
-classReservada: RESERVADO CLASS 
-    ;
-
-disjIndiv: disjoint individuals
-    ;
-
-classes: CLASS
-    | CLASS orAnd classes 
-    ;
-
-/*EquivalentTo*/
-equivalent: EQUIVALENTTO CLASS equivalentPro
-    | EQUIVALENTTO instancyExpressions  
-    ;
-    equivalentPro: virgula props
-    | orAnd props
-    | orAnd classes 
-    | '(' equivalentPro ')'
-    ;
-
-/*SubClass*/
-subclass: SUBCLASSOF CLASS
-    | SUBCLASSOF props
-    | SUBCLASSOF CLASS orAnd props
-    | SUBCLASSOF CLASS virgula props
-    ;        
-
-/*Individuals*/
-individuals: INDIVIDUALS instancyExpressions
-    | 
-    ;
-individuals: INDIVIDUALS  
-    ;   
-
-/*Disjoint Classes*/
-disjoint: disjoint seqClasses
+classe: classeDefinida classe 
+    | classePrimitiva classe    
+    | classeComum classe        
+    | operprecedente classe  
+    | error classe              
     |
-    ;           
-disjoint: DISJOINTCLASS        
-    ;                            
-seqClasses: CLASS
-    | CLASS virgula seqClasses
-    | '(' seqClasses ')' 
     ;
-    
-/*instancies*/
-instancyExpressions: INSTANCY
-    | INSTANCY virgula instancyExpressions
-    | '{' instancyExpressions '}'
+
+rclass: RCLASS CLASS { classeAtual = yytext; semantico->precAux.clear(); semantico->onlys.clear(); sintClass = ""; }
+    ;
+
+classeComum: classeComumProbs   { sintClass += "Classe Comum -> " + classeAtual + "\n"; }
+    ;
+
+classeComumProbs: rclass disjoint individuals 
+    | rclass disjoint
+    | rclass individuals
+    | rclass
+    ;
+
+classePrimitiva: classePrimitivaProbs   { sintClass += "Classe Primitiva -> " + classeAtual + "\n";  }
+    ;
+
+classePrimitivaProbs: rclass subclass disjoint individuals 
+    | rclass subclass disjoint
+    | rclass subclass individuals
+    | rclass subclass
+    ;
+
+classeDefinida: classeDefinidaProbs { sintClass += "Classe Definida -> " + classeAtual + "\n"; } 
+    ;
+
+classeDefinidaProbs: rclass equivalent disjoint individuals 
+    | rclass equivalent disjoint
+    | rclass equivalent individuals
+    | rclass equivalent
+    | rclass equivalent subclass disjoint individuals
+    | rclass equivalent subclass disjoint
+    | rclass equivalent subclass individuals
+    | rclass equivalent subclass
+    ;
+
+operprecedente: operprecedenteProbs   { sintClass += "Classe Desconhecida -> " + classeAtual + "\n"; semantico->onlyCheck(operadorAtual, yylineno); }
+    ;
+
+operprecedenteProbs: rclass subclass equivalent
+    | rclass subclass equivalent disjoint individuals
+    | rclass subclass equivalent individuals disjoint
+    | rclass subclass equivalent individuals
+    | rclass subclass equivalent disjoint
+    | rclass subclass individuals disjoint
+    | rclass equivalent individuals disjoint
+    | rclass individuals equivalent subclass disjoint
+    | rclass disjoint equivalent subclass individuals
+    | rclass individuals equivalent subclass
+    | rclass disjoint equivalent subclass
+    | rclass individuals subclass
+    | rclass individuals equivalent
+    | rclass disjoint subclass
+    | rclass disjoint equivalent
+    ;
+
+equivalent: requivalent CLASS equivProbs
+    | requivalent instancies  { sintClass += "Classe enumerada, "; }
+    ;
+
+subclass: rsubclass CLASS
+    | rsubclass seqProp
+    | rsubclass CLASS connect seqProp
+    | rsubclass CLASS ',' seqProp
+    ;         
+
+individuals: rindividuals instancies
+    ;
+
+disjoint: rdisjoint seqClasses
     ;    
 
-/*propriedades*/
-props: propriedade
-    | propriedade orAnd props         
-    | propriedade virgula props
-    | INVERSE propriedade
-    | INVERSE propriedade orAnd props
-    | INVERSE propriedade virgula props
-    ;
-propriedade: PROPRIEDADES some
-    | PROPRIEDADES only        
-    | PROPRIEDADES value
-    | PROPRIEDADES quantity
-    | PROPRIEDADES all
-    | '(' props ')'
+requivalent: REQUIVALENT    { operadorAtual = yytext; isSubclassOf = false; }
     ;
 
-only: ONLY CLASS                
-    | ONLY '(' classes ')'
+rsubclass: RSUBCLASS        { operadorAtual = yytext; isSubclassOf = true; }
+    ;        
+
+rindividuals: RINDIVIDUALS  { operadorAtual = yytext; }
+    ;    
+
+rdisjoint: RDISJOINT        { operadorAtual = yytext; }
+    ;                            
+
+equivProbs: ',' seqProp
+    | connect seqProp
+    | connect multClasses { sintClass += "Classe coberta, "; }
+    | '(' equivProbs ')'
     ;
 
-some: SOME CLASS
-    | SOME '(' classes ')'
-    | SOME DADOS dados
-    | SOME propriedade                          
+seqClasses: CLASS
+    | CLASS ',' seqClasses
+    | '(' seqClasses ')' 
     ;
 
-orAnd: OR
+instancies: INSTANCY
+    | INSTANCY ',' instancies
+    | '{' instancies '}'
+    ;    
+
+connect: OR
     | AND
     ;
 
-dados: '[' RELOP NUM ']'
+seqProp: prop      
+    | prop connect seqProp         
+    | prop ',' seqProp
+    | INVERSE prop
+    | INVERSE prop connect seqProp
+    | INVERSE prop ',' seqProp
+    ;
+
+prop: propName some 
+    | propName only        { sintClass += "Axioma de fechamento, "; semantico->onlyCheck(propriedadeAtual, yylineno); }
+    | propName value
+    | propName qntd
+    | propName exactly
+    | propName all
+    | '(' seqProp ')'
+    ;
+
+propName: PROPRIETY         { propriedadeAtual = yytext;}
+    ;
+
+only: ONLY auxOnlyClass                    
+    | ONLY '(' onlyMultClasses ')'
+    ;
+
+onlyMultClasses: auxOnlyClass
+    | auxOnlyClass connect onlyMultClasses 
+    ;
+
+auxOnlyClass: CLASS             { if(isSubclassOf) semantico->onlys.push_back(yytext); }
+    ;
+
+multClasses: className  
+    | className connect multClasses 
+    ;
+
+className: CLASS            { precedente = yytext; coercao = yytext; }
+    ;
+
+some: SOME CLASS       { }
+    | SOME '(' multClasses ')' {  semantico->precAux.push_back(precedente); precedente = ""; }
+    | SOME dtype especificardtype {  }
+    | SOME prop             { sintClass += "Descrição aninhada, "; }
+    //| error                 { std::cout << "Esperava CLASS, DTYPE, PROPRIETY\n"; }
+    ;
+
+especificardtype: '[' SSYMBOL num ']'   { semantico->coercionChecker(coercao, numCoercao, yylineno); }
     |
     ;
 
-quantity: MIN NUM DADOS
-    | MAX NUM DADOS
-    | EXACTLY NUM DADOS
-    | MIN NUM CLASS
-    | MAX NUM CLASS
-    | EXACTLY NUM CLASS
+qntd: MIN num dtype   { semantico->coercionChecker(coercao, numCoercao, yylineno); }
+    | MAX num dtype   { semantico->coercionChecker(coercao, numCoercao, yylineno); }
+    | MIN num className   { semantico->coercionChecker(coercao, numCoercao, yylineno); }
+    | MAX num className   { semantico->coercionChecker(coercao, numCoercao, yylineno); }
     ;
 
-value: VALUE CLASS
-    | VALUE INSTANCY
-    | VALUE DADOS dados
+num: CARDINALIDADE      { numCoercao = yytext; }
     ;
 
-all: ALL 
+dtype: DTYPE            { coercao = yytext; }
     ;
 
-virgula: ','
+value: VALUE CLASS      
+    | VALUE INSTANCY    
+    | VALUE dtype especificardtype
+    ;
+
+exactly: EXACTLY num className      { semantico->coercionChecker(coercao, numCoercao, yylineno); }
+    | EXACTLY '{' instancies '}'
+    ;
+
+all: ALL CLASS 
+    | ALL '(' multClasses ')'
     ;
 
 %%
@@ -157,12 +251,41 @@ int main(int argc, char ** argv)
 	}
 
 	yyparse();
-    
+
+    cout << "Arquivo lido: " << argv[1] << endl;
+
+            cout << "-------------------------------------------------------------------------------" << std::endl;
+            cout << "\t\t\t\t ERROS SEMÂNTICOS" << std::endl;
+            cout << "-------------------------------------------------------------------------------" << std::endl;
+            for(string e : semantico->semanticErrors){
+                cout << "ERRO SEMÂNTICO: " << e;
+            }  
+            if(semantico->semanticErrors.size() == 0){
+                cout << "Nenhum erro semântico encontrado. Verifique os sintáticos.\n";
+            }
+
+            cout << "-------------------------------------------------------------------------------" << std::endl;
+            cout << "\t\t\t\t ERROS SINTÁTICOS" << std::endl;
+            cout << "-------------------------------------------------------------------------------" << std::endl;
+            for(string e: sintaticErrors){
+                cout << e;
+            }
+            if(sintaticErrors.size() == 0){
+                cout << "Nenhum erro sintático encontrado.\n";
+            }
 }
 
 void yyerror(const char * s)
 {
-	/* mensagem de erro exibe o símbolo que causou erro e o número da linha */
-    cout << "ERRO SINTÁTICO: símbolo \"" << yytext << "\" (linha " << yylineno << " do arquivo)\n";
+	/* variáveis definidas no analisador léxico */   
+	extern char * yytext;   
 
+
+    string aux = "";
+
+    aux += "ERRO SINTÁTICO: símbolo \"" + std::string(yytext) + "\" (linha " + std::to_string(yylineno) + " do arquivo)\n";
+    aux += "NA PROPRIEDADE: \"" + operadorAtual + "\" DA CLASSE " + classeAtual + "\n";
+
+    sintaticErrors.push_back(aux);
+    aux = "";
 }
