@@ -5,6 +5,13 @@
     #include <cstring>
     using std::cout;
 
+    int cont = 0, contPar = 0, contColc = 0, contChav = 0;
+    int contCommumClasses = 0;
+    int contClassesDefinidas = 0;
+    int contClassesPrimitivas = 0;
+    int 
+    bool classeError, equivalentError, subclassError, disjointError, individualsError, onlyError,someError, integerError,floatError,dataError
+
     int yylex(void);
     int yyparse(void);
     void yyerror(const char *);
@@ -24,10 +31,10 @@ classe: classeBody classe
     | 
     ;
 
-classeBody: classReservada equivalent disjIndiv     
-    | classReservada subclass disjIndiv     
-    | classReservada disjIndiv        
-    | classReservada equivalent subclass disjIndiv 
+classeBody: classReservada equivalent disjIndiv    { std::cout << "Classe Definida"<< std::endl;} 
+    | classReservada subclass disjIndiv     { std::cout << "Classe Primitiva"<< std::endl;} 
+    | classReservada disjIndiv        { std::cout << "Classe Comum"<< std::endl;} 
+    | classReservada equivalent subclass disjIndiv { std::cout << "Classe Indefinida"<< std::endl;} 
     ;
 
 classReservada: RESERVADO CLASS 
@@ -42,7 +49,7 @@ classes: CLASS
 
 /*EquivalentTo*/
 equivalent: EQUIVALENTTO CLASS equivalentPro
-    | EQUIVALENTTO instancyExpressions  
+    | EQUIVALENTTO instancyExpressions  { std::cout << "Classe Enumerada"<< std::endl;} 
     ;
     equivalentPro: virgula props
     | orAnd props
